@@ -12,7 +12,7 @@ namespace VsLanguageService.Regex
     {
         private LanguagePreferences languagePreferences;
         private IScanner scanner;
-
+        
         public override string Name
         {
             get
@@ -25,7 +25,7 @@ namespace VsLanguageService.Regex
         {
             
         }
-
+ 
         public override string GetFormatFilterList()
         {
             return null;
@@ -42,6 +42,12 @@ namespace VsLanguageService.Regex
             return this.languagePreferences;
         }
 
+        public override Colorizer GetColorizer(IVsTextLines buffer)
+        {
+            var scanner = GetScanner(buffer);
+            return new TestColorizer(this, buffer, scanner);
+        }
+
         public override IScanner GetScanner(IVsTextLines buffer)
         {
             if(this.scanner == null)
@@ -51,7 +57,40 @@ namespace VsLanguageService.Regex
 
         public override AuthoringScope ParseSource(ParseRequest req)
         {
-            return new TestAuthoringScope();
+            var authoringScope = new TestAuthoringScope();
+            switch (req.Reason)
+            {
+                case ParseReason.None:
+                    break;
+                case ParseReason.MemberSelect:
+                    break;
+                case ParseReason.HighlightBraces:
+                    break;
+                case ParseReason.MemberSelectAndHighlightBraces:
+                    break;
+                case ParseReason.MatchBraces:
+                    break;
+                case ParseReason.Check:
+                    break;
+                case ParseReason.CompleteWord:
+                    break;
+                case ParseReason.DisplayMemberList:
+                    break;
+                case ParseReason.QuickInfo:
+                    break;
+                case ParseReason.MethodTip:
+                    break;
+                case ParseReason.Autos:
+                    break;
+                case ParseReason.CodeSpan:
+                    break;
+                case ParseReason.Goto:
+                    break;
+                default:
+                    break;
+            }
+
+            return authoringScope;
         }
     }
 }
