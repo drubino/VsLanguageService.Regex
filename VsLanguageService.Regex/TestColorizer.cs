@@ -15,10 +15,5 @@ namespace VsLanguageService.Regex
             : base(svc, buffer, scanner)
         {
         }
-
-        public override int ColorizeLine(int line, int length, IntPtr ptr, int state, uint[] attrs)
-        {
-            return base.ColorizeLine(line, length, ptr, state, attrs);
-        }
     }
 }
