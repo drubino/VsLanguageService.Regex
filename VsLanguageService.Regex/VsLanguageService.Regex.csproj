@@ -51,12 +51,17 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Compiler\Lexer.cs" />
+    <Compile Include="Compiler\Parser.cs" />
+    <Compile Include="Compiler\ParseTreeNode.cs" />
+    <Compile Include="Compiler\Token.cs" />
     <Compile Include="LanguagePackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestAuthoringScope.cs" />
     <Compile Include="TestColorizer.cs" />
     <Compile Include="TestLanguageService.cs" />
     <Compile Include="TestScanner.cs" />
+    <Compile Include="TestSource.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Key.snk" />

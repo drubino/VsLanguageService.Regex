@@ -6,14 +6,18 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio;
+using VsLanguageService.Regex.Compiler;
 
 namespace VsLanguageService.Regex
 {
     public class TestAuthoringScope : AuthoringScope
     {
-        public TestAuthoringScope()
+        public ParseTreeNode ParseTree { get; private set; }
+
+        public TestAuthoringScope(string input)
         {
-            
+            var parser = new Parser();
+            this.ParseTree = parser.Parse(input);
         }
 
         public override string GetDataTipText(int line, int col, out TextSpan span)

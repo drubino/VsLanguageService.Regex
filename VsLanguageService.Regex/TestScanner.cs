@@ -5,32 +5,29 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VsLanguageService.Regex.Compiler;
 
 namespace VsLanguageService.Regex
 {
     public class TestScanner : IScanner
     {
-        private string line;
+        private IVsTextBuffer buffer;
         private int offset;
         private string source;
-        private IVsTextBuffer buffer;
+        private Lexer lexer;
+        private List<Token> tokens;
 
         public TestScanner(IVsTextBuffer buffer)
         {
-
             this.buffer = buffer;
+            this.lexer = new Lexer();
         }
 
-        public bool ScanTokenAndProvideInfoAboutIt(TokenInfo tokenInfo,
-                                                   ref int state)
+        public bool ScanTokenAndProvideInfoAboutIt(TokenInfo tokenInfo, ref int state)
         {
             var found = false;
             if (tokenInfo != null)
-            {
                 found = GetNextToken(offset, tokenInfo, ref state);
-                if (found)
-                    this.offset++;
-            }
             return found;
         }
 
@@ -38,53 +35,40 @@ namespace VsLanguageService.Regex
         {
             this.offset = offset;
             this.source = source;
+            this.tokens = this.lexer.Lex(this.source).ToList();
         }
 
-        private bool GetNextToken(int startIndex,
-                                 TokenInfo tokenInfo,
-                                 ref int state)
+        private bool GetNextToken(int index, TokenInfo tokenInfo, ref int state)
         {
-            var foundToken = false;
-            tokenInfo.StartIndex = startIndex;
-            if (startIndex < source.Length)
+            var token = this.tokens.ElementAtOrDefault(index++);
+            if (token != null)
             {
-                var character = source.Substring(startIndex, 1);
-                if (character == "a")
+                switch (token.Type)
                 {
-                    foundToken = true;
-                    tokenInfo.Token = (int)ParseState.A;
-                    tokenInfo.EndIndex = startIndex;
-                    tokenInfo.Color = TokenColor.Keyword;
-                    tokenInfo.Type = TokenType.Keyword;
-                    state = 0;
-                }
-                else if (character == "b")
-                {
-                    foundToken = true;
-                    tokenInfo.Token = (int)ParseState.B;
-                    tokenInfo.EndIndex = startIndex;
-                    tokenInfo.Color = TokenColor.String;
-                    tokenInfo.Type = TokenType.String;
-                    state = 1;
-                }
-                else
-                {
-                    foundToken = true;
-                    tokenInfo.Token = (int)ParseState.Unknown;
-                    tokenInfo.EndIndex = startIndex;
-                    tokenInfo.Color = TokenColor.Text;
-                    tokenInfo.Type = TokenType.Text;
-                    state = 1;
+                    case ParserTokenType.Expression:
+                        break;
+                    case ParserTokenType.Addition:
+                        break;
+                    case ParserTokenType.Subtraction:
+                        break;
+                    case ParserTokenType.Character:
+                        break;
+                    case ParserTokenType.EndOfStream:
+                        break;
+                    default:
+                        break;
                 }
             }
-            return foundToken;
+            
+            return token != null || token.Type != ParserTokenType.EndOfStream;
         }
         
         private enum ParseState
         {
-            A = 0,
-            B = 1,
-            Unknown
+            Unknown = 0,
+            A = 1,
+            B = 2,
+            C = 3,
         }
     }
 }

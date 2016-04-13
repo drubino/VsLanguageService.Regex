@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TextManager.Interop;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,9 +11,15 @@ namespace VsLanguageService.Regex
 {
     public class TestLanguageService : LanguageService
     {
+        #region Fields
+
         private LanguagePreferences languagePreferences;
         private IScanner scanner;
-        
+
+        #endregion //Fields
+
+        #region Properties
+
         public override string Name
         {
             get
@@ -21,11 +28,78 @@ namespace VsLanguageService.Regex
             }
         }
 
+        #endregion //Properties
+
+        #region Constructors
+
         public TestLanguageService()
         {
-            
         }
- 
+
+        #endregion //Constructors
+
+        #region Methods
+
+        #region Source
+
+        public override Source CreateSource(IVsTextLines buffer)
+        {
+            var colorizer = GetColorizer(buffer);
+            return new TestSource(this, buffer, colorizer);
+        }
+
+        #endregion //Source
+
+        #region Scanner
+
+        public override IScanner GetScanner(IVsTextLines buffer)
+        {
+            if (this.scanner == null)
+                this.scanner = new TestScanner(buffer);
+            return this.scanner;
+        }
+
+        #endregion //Scanner
+
+        #region Parser
+
+        public override AuthoringScope ParseSource(ParseRequest req)
+        {
+            var authoringScope = new TestAuthoringScope(req.Text);
+            switch (req.Reason)
+            {
+                case ParseReason.None:
+                case ParseReason.Check:
+                    break;
+                default:
+                    break;
+            }
+
+            return authoringScope;
+        }
+
+        #endregion //Parser
+
+        #region Colorizer
+
+        public override Colorizer GetColorizer(IVsTextLines buffer)
+        {
+            var scanner = GetScanner(buffer);
+            return new TestColorizer(this, buffer, scanner);
+        }
+
+        public override int GetItemCount(out int count)
+        {
+            return base.GetItemCount(out count);
+        }
+
+        public override int GetColorableItem(int index, out IVsColorableItem item)
+        {
+            return base.GetColorableItem(index, out item);
+        }
+
+        #endregion //Colorizer
+
         public override string GetFormatFilterList()
         {
             return null;
@@ -42,55 +116,6 @@ namespace VsLanguageService.Regex
             return this.languagePreferences;
         }
 
-        public override Colorizer GetColorizer(IVsTextLines buffer)
-        {
-            var scanner = GetScanner(buffer);
-            return new TestColorizer(this, buffer, scanner);
-        }
-
-        public override IScanner GetScanner(IVsTextLines buffer)
-        {
-            if(this.scanner == null)
-                this.scanner = new TestScanner(buffer);
-            return this.scanner;
-        }
-
-        public override AuthoringScope ParseSource(ParseRequest req)
-        {
-            var authoringScope = new TestAuthoringScope();
-            switch (req.Reason)
-            {
-                case ParseReason.None:
-                    break;
-                case ParseReason.MemberSelect:
-                    break;
-                case ParseReason.HighlightBraces:
-                    break;
-                case ParseReason.MemberSelectAndHighlightBraces:
-                    break;
-                case ParseReason.MatchBraces:
-                    break;
-                case ParseReason.Check:
-                    break;
-                case ParseReason.CompleteWord:
-                    break;
-                case ParseReason.DisplayMemberList:
-                    break;
-                case ParseReason.QuickInfo:
-                    break;
-                case ParseReason.MethodTip:
-                    break;
-                case ParseReason.Autos:
-                    break;
-                case ParseReason.CodeSpan:
-                    break;
-                case ParseReason.Goto:
-                    break;
-                default:
-                    break;
-            }
-
-            return authoringScope;
-        }
+        #endregion //Methods
     }
 }
