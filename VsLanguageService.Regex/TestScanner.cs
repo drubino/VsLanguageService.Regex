@@ -13,9 +13,10 @@ namespace VsLanguageService.Regex
     {
         private IVsTextBuffer buffer;
         private int offset;
+        private int index;
         private string source;
         private Lexer lexer;
-        private List<Token> tokens;
+        private IEnumerable<Token> tokens;
 
         public TestScanner(IVsTextBuffer buffer)
         {
@@ -27,40 +28,54 @@ namespace VsLanguageService.Regex
         {
             var found = false;
             if (tokenInfo != null)
-                found = GetNextToken(offset, tokenInfo, ref state);
+                found = GetNextToken(tokenInfo, ref state);
             return found;
         }
 
         public void SetSource(string source, int offset)
         {
             this.offset = offset;
+            this.index = 0;
             this.source = source;
-            this.tokens = this.lexer.Lex(this.source).ToList();
+
+            try
+            {
+                this.tokens = this.lexer.Lex(this.source).ToList();
+            }
+            catch
+            {
+                this.tokens = Enumerable.Empty<Token>();
+            }
         }
 
-        private bool GetNextToken(int index, TokenInfo tokenInfo, ref int state)
+        private bool GetNextToken(TokenInfo tokenInfo, ref int state)
         {
-            var token = this.tokens.ElementAtOrDefault(index++);
+            var token = this.tokens.ElementAtOrDefault(this.index++);
             if (token != null)
             {
+                var tokenLength = token.Value.Length == 0 ? 0 : token.Value.Length - 1;
+                tokenInfo.StartIndex = this.offset;
+                tokenInfo.EndIndex = this.offset + tokenLength;
+
                 switch (token.Type)
                 {
-                    case ParserTokenType.Expression:
-                        break;
                     case ParserTokenType.Addition:
-                        break;
                     case ParserTokenType.Subtraction:
+                        tokenInfo.Color = TokenColor.Keyword;
                         break;
                     case ParserTokenType.Character:
+                        tokenInfo.Color = TokenColor.String;
                         break;
                     case ParserTokenType.EndOfStream:
-                        break;
                     default:
+                        tokenInfo.Color = TokenColor.Text;
                         break;
                 }
+                
+                this.offset += token.Value.Length;
             }
             
-            return token != null || token.Type != ParserTokenType.EndOfStream;
+            return token != null && token.Type != ParserTokenType.EndOfStream;
         }
         
         private enum ParseState
